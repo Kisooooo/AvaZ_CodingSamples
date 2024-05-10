@@ -1,0 +1,90 @@
+Data Description provided by VAST:
+
+Graph Description: The challenge problem KG is generated using
+• 27,622 nodes
+• 24,038 edges
+• 7,794 connected components
+• Possible node types include: {company and person}
+• Possible node sub types include: {beneficial owner, company contacts}
+• Possible edge types include: {person}
+• Possible edge sub types include: {beneficial owner, company contacts}
+• This is an undirected multi-graph
+• The graph format is a json format.
+
+
+Data sample:
+{
+    "links": [
+        {
+            "source": [
+                "Lake Chad  Catchers Limited Liability Company Worldwide"
+            ],
+            "target": [
+                "Erin Flores"
+            ],
+            "type": [
+                "Owner"
+            ]
+        },
+        {
+            "source": [
+                "Lake Chad  Catchers Limited Liability Company Worldwide"
+            ],
+            "target": [
+                "Linda Lee"
+            ],
+            "type": [
+                "Owner"
+            ]
+        },
+        {
+            "source": [
+                "Lake Chad  Catchers Limited Liability Company Worldwide"
+            ],
+            "target": [
+                "John Rivera"
+            ],
+            "type": [
+                "Beneficial Owner"
+            ]
+        },
+        {
+            "source": [
+                "Lake Chad  Catchers Limited Liability Company Worldwide"
+            ],
+            "target": [
+                "Stephen Carpenter"
+            ],
+            "type": [
+                "Beneficial Owner"
+            ]
+        },
+         {
+            "country": [
+                "Utoporiana"
+            ],
+            "id": [
+                "Makumba Ltd. Liability Co"
+            ],
+            "product_services": [
+                "Car service, car parts and accessories, automotive technology, diagnostics for repair shops, antilock braking and fuel-injection systems, auto electronics, starters, and alternators; Home (power tools for DIY enthusiasts, garden tools, household appliances, heating and warm water); and industry and trade (communication services, power tools for professional, sensors and foundry - MEMS, security systems, packaging technology)"
+            ],
+            "revenue_omu": [
+                90986412.5191
+            ],
+            "type": [
+                "Company"
+            ]
+        },
+        {
+            "source": [
+                "Lake Chad  Catchers Limited Liability Company Worldwide"
+            ],
+            "target": [
+                "Heather Smith"
+            ],
+            "type": [
+                "Company Contacts"
+            ]
+        }
+}
