@@ -1,7 +1,12 @@
+<!--
+This script combines backend server logic with front-end HTML and JavaScript to create the forum's front page,
+that allows users to search posts by tags, upvote them, and log in or sign out.
+-->
+
 <?php    session_start();
     if (isset($_POST["logout"])) {
-    session_destroy(); // Destroy the session
-    header("Location: skeletonHomePageForum.php"); // Redirect to the login/sign-up form
+    session_destroy();
+    header("Location: skeletonHomePageForum.php"); // Redirect to the login/sign-up form if pressed logout
     exit();
 }
 ?>
@@ -24,56 +29,58 @@
     if($conn->connect_error){
         die('Connection failed');
     }
-    //needs format http://localhost/.../filepath.php?id=n
-    $sql = "SELECT * FROM poststoragetable ORDER BY RAND() LIMIT 4";
-    $result = $conn->query($sql);
-    //0
-    $row0 = $result->fetch_assoc();
-    $id0 = $row0['id'];
-    $logtime0 = $row0['logtime'];
-    $title0 = $row0['title'];
-    $content0 = $row0['content'];
-    $subj0 = $row0['subj'];
-    $courseNum0 = $row0['courseNum'];
-    $other0 = $row0['otherTags'];
-    $user0 = $row0['userID'];
-    $upvotes0 = $row0['score'];
-    //1
-    $row1 = $result->fetch_assoc();
-    $id1 = $row1['id'];
-    $logtime1 = $row1['logtime'];
-    $title1 = $row1['title'];
-    $content1 = $row1['content'];
-    $subj1 = $row1['subj'];
-    $courseNum1 = $row1['courseNum'];
-    $other1 = $row1['otherTags'];
-    $user1 = $row1['userID'];
-    $upvotes1 = $row1['score'];
-    //2
-    $row2 = $result->fetch_assoc();
-    $id2 = $row2['id'];
-    $logtime2 = $row2['logtime'];
-    $title2 = $row2['title'];
-    $content2 = $row2['content'];
-    $subj2 = $row2['subj'];
-    $courseNum2 = $row2['courseNum'];
-    $other2 = $row2['otherTags'];
-    $user2 = $row2['userID'];
-    $upvotes2 = $row2['score'];
-    //3
-    $row3 = $result->fetch_assoc();
-    $id3 = $row3['id'];
-    $logtime3 = $row3['logtime'];
-    $title3 = $row3['title'];
-    $content3 = $row3['content'];
-    $subj3 = $row3['subj'];
-    $courseNum3 = $row3['courseNum'];
-    $other3 = $row3['otherTags'];
-    $user3 = $row3['userID'];
-    $upvotes3 = $row3['score'];
-    $conn->close();
-?>
 
+
+    function fetchPosts($conn, $limit = 4) {
+        $sql = "SELECT * FROM poststoragetable ORDER BY RAND() LIMIT ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+    
+    function generatePostHtml($postId, $title, $content, $upvotes) {
+        return "
+        <table position='absolute'>
+            <tr>
+                <td colspan='1'>
+                    <center>
+                        <button onclick='incrementVote($postId)'> Upvote </button>
+                    </center> 
+                </td>
+                <td colspan='1'>
+                    <input class='invis' type='number' id='upvoteNumber$postId' name='upvoteNumber$postId' value='$upvotes'><br>  
+                </td>
+                <td colspan='2' onclick=\"window.location.href='skeletonPostPage.php?id=$postId';\">
+                    $title
+                </td>
+            </tr>
+            <tr>
+                <td colspan='4'>
+                    <label for='postDescript$postId'>
+                        Post Description:<br>
+                    </label><br>
+                    <input class='invis' type='text' id='postDescript$postId' name='postDescript$postId' value='$content'><br> 
+                </td>
+            </tr>
+        </table>";
+    }
+    
+    function displayPosts($conn) {
+        $posts = fetchPosts($conn);
+        while ($row = $posts->fetch_assoc()) {
+            $postId = $row['id'];
+            $title = $row['title'];
+            $content = $row['content'];
+            $upvotes = $row['score'];
+            echo generatePostHtml($postId, $title, $content, $upvotes);
+        }
+    }
+    
+    $conn = connectDatabase();
+    displayPosts($conn);
+    $conn->close();
+    ?>
 
                         
 <html>
@@ -275,225 +282,83 @@ Links external CSS for page styling and JavaScript functions for interactivity (
                     <input type="hidden" name="signupUserType" id="signupUserTypeInput">
                 </form>
 
-                </td>
-            </tr>
-            <tr>
-                <td rowspan = 2 colspan = 2>left bar</td>
-                <td colspan = 2>
-                    <div class="dropdown">
-                        <button class="dropbtn">sort</button>
-                        <div class="dropdown-content">
-                            <a href="#">new</a>
-                            <a href="#">popular</a>
+             <?PHP
+
+                // Setting up content on page
+                function renderLeftBar() {
+                    return '<td rowspan="2" colspan="2">left bar</td>';
+                }
+                
+                function renderRightBar() {
+                    return '<td rowspan="2" colspan="2">right bar</td>';
+                }
+                
+                function renderSortDropdown() {
+                    return '<td colspan="2">
+                        <div class="dropdown">
+                            <button class="dropbtn">sort</button>
+                            <div class="dropdown-content">
+                                <a href="#">new</a>
+                                <a href="#">popular</a>
+                            </div>
                         </div>
-                    </div>
-                </td>
-                <td colspan = 2 onclick="window.location.href='skeletonCreatePostPageRevised.html';">
-                    create a new post (click to to link to page)
-                </td>
-                <td rowspan = 2 colspan = 2>right bar</td>
-            </tr>
-            <tr>
-                <!--left bar rowspan 3 colspan 2 gone-->c
-                <td rowspan = 1 colspan = 4>
-                    <table class = "fitting">
-                        <!--this is the table fitting all the other tables, 
-                            and we will populate this table with the tables populated with specific forum info-->
+                    </td>';
+                }
+            
+            // Link to another script handling create post page
+                function renderCreateNewPostButton() {
+                    return '<td colspan="2" onclick="window.location.href=\'skeletonCreatePostPageRevised.html\';">
+                        create a new post (click to link to page)
+                    </td>';
+                }
+                
+                function renderPost($postId, $title, $content, $upvotes, $tags) {
+                    $tagsHtml = implode('', array_map(fn($tag) => "<td><button onclick=\"window.location.href='skeletonTagsPage.html';\"> $tag </button></td>", $tags));
+                    return "
+                    <table position='absolute'>
                         <tr>
-                            <td colspan = 4>
-                                <table position = "absolute"><!--table for each post-->
-                                    <tr>
-                                        <td colspan = 1>
-                                            <center>
-                                                <button onclick = "incrementVote(0)" > Upvote </button>
-                                            </center> 
-                                        </td>
-                                        <td colspan = 1>
-                                            <input class = "invis" type="number" type = "hidden" id="upvoteNumber0" name="upvoteNumber0" value="<?=$upvotes0?>"><br>  
-                                        </td> 
-                                        <td colspan = 2 onclick="window.location.href='skeletonPostPage.php?id=<?=$id0?>';">
-                                            <?=$title0?>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan = 4>
-                                            <label for="postDescript0">
-                                                Post description:<br>
-                                            </label><br>
-                                            <input class = "invis" type="text" id="postDescript0" name="postDescript0" value=<?=$content0?>><br> 
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan = 4>
-                                            <div>
-                                                <table class = "forumPostTable" class = "scrollable">
-                                                    <tr max-height = "30px"><!--these tags will populate depending on the actual post-->
-                                                        <!--TODO edit this to just be tag text, no link-->
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 1 (click any tag to go to tags page)</button>
-                                                        </td>
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 2 </button>
-                                                        </td>
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 3 </button>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>  
+                            <td colspan='1'>
+                                <center>
+                                    <button onclick='incrementVote($postId)'> Upvote </button>
+                                </center> 
+                            </td>
+                            <td colspan='1'>
+                                <input class='invis' type='number' id='upvoteNumber$postId' name='upvoteNumber$postId' value='$upvotes'><br>  
+                            </td>
+                            <td colspan='2' onclick=\"window.location.href='skeletonPostPage.php?id=$postId';\">
+                                $title
+                            </td>
                         </tr>
                         <tr>
-                            <td colspan = 4>
-                                <table position = "absolute"><!--table for each post-->
-                                    <tr>
-                                        <td colspan = 1>
-                                            <center>
-                                                <button onclick = "incrementVote(1)" > Upvote </button>
-                                            </center> 
-                                        </td>
-                                        <td colspan = 1>
-                                            <input class = "invis" type="number" type = "hidden" id="upvoteNumber1" name="upvoteNumber1" value="0"><br>  
-                                        </td>
-                                        <td colspan = 2 onclick="window.location.href='skeletonPostPage.html';">
-                                            forum question (click here to go to post page)
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan = 4>
-                                            <label for="postDescript1">
-                                                Post Description:<br>
-                                            </label><br>
-                                            <input class = "invis" type="text" id="postDescript1" name="postDescript0"><br> 
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan = 4>
-                                            <div>
-                                                <table class = "forumPostTable" class = "scrollable">
-                                                    <tr max-height = "30px"><!--these tags will populate depending on the actual post-->
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 1 </button>
-                                                        </td>
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 2 </button>
-                                                        </td>
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 3 </button>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td> 
+                            <td colspan='4'>
+                                <label for='postDescript$postId'>
+                                    Post Description:<br>
+                                </label><br>
+                                <input class='invis' type='text' id='postDescript$postId' name='postDescript$postId' value='$content'><br> 
+                            </td>
                         </tr>
                         <tr>
-                            <td colspan = 4>
-                                <table position = "absolute"><!--table for each post-->
-                                    <tr>
-                                        <td colspan = 1>
-                                            <center>
-                                                <button onclick = "incrementVote(2)" > Upvote </button>
-                                            </center> 
-                                        </td>
-                                        <td colspan = 1>
-                                            <input class = "invis" type="number" type = "hidden" id="upvoteNumber2" name="upvoteNumber2" value="0"><br>  
-                                        </td>
-                                        <td colspan = 2 onclick="window.location.href='skeletonPostPage.html';">
-                                            forum question (click here to go to post page)
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan = 4>
-                                            <label for="postDescript2">
-                                                Post Description:<br>
-                                            </label><br>
-                                            <input class = "invis" type="text" id="postDescript2" name="postDescript2"><br> 
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan = 4>
-                                            <div>
-                                                <table class = "forumPostTable" class = "scrollable">
-                                                    <tr max-height = "30px"><!--these tags will populate depending on the actual post-->
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 1 (click any tag to go to tags page)</button>
-                                                        </td>
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 2 </button>
-                                                        </td>
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 3 </button>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>  
+                            <td colspan='4'>
+                                <div>
+                                    <table class='forumPostTable' class='scrollable'>
+                                        <tr max-height='30px'>
+                                            $tagsHtml
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
                         </tr>
-                        <tr>
-                            <td colspan = 4>
-                                <table position = "absolute"><!--table for each post-->
-                                    <tr>
-                                        <td colspan = 1>
-                                            <center>
-                                                <button onclick = "incrementVote(3)" > Upvote </button>
-                                            </center> 
-                                        </td>
-                                        <td colspan = 1>
-                                            <input class = "invis" type="number" type = "hidden" id="upvoteNumber3" name="upvoteNumber3" value="0"><br>  
-                                        </td>
-                                        <td colspan = 2 onclick="window.location.href='skeletonPostPage.html';">
-                                            forum question (click here to go to post page)
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan = 4>
-                                            <label for="postDescript3">
-                                                Post Description:<br>
-                                            </label><br>
-                                            <input class = "invis" type="text" id="postDescript3" name="postDescript3"><br> 
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan = 4>
-                                            <div>
-                                                <table class = "forumPostTable" class = "scrollable">
-                                                    <tr max-height = "30px"><!--these tags will populate depending on the actual post-->
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 1 (click any tag to go to tags page)</button>
-                                                        </td>
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 2 </button>
-                                                        </td>
-                                                        <td>
-                                                            <button onclick="window.location.href='skeletonTagsPage.html';" > Tag 3 </button>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td> 
-                        </tr>
-                    </table>
-                </td>
-            </tr>
+                    </table>";
+                }
+                
+                echo '<table>';
+                echo '<tr>' . renderLeftBar() . renderSortDropdown() . renderCreateNewPostButton() . renderRightBar() . '</tr>';
+                echo '<tr><td rowspan="1" colspan="4"><table class="fitting">';
+                echo renderPost(0, 'Sample Title 0', 'Sample content for post 0', 5, ['Tag 1', 'Tag 2', 'Tag 3']); // FOr testing, to be filled in
+                echo renderPost(1, 'Sample Title 1', 'Sample content for post 1', 10, ['Tag A', 'Tag B', 'Tag C']);
+                echo '</table></td></tr>';
+                echo '</table>';
             
                 
-
-            
-            
-        </table>
-    </div>
-    
     </body>
 </html>
