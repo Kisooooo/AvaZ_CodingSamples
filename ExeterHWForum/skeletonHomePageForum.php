@@ -141,7 +141,7 @@ Links external CSS for page styling and JavaScript functions for interactivity (
                                     </div>
                                 </div>
                             </td>
-                            <form action="search.php" method="post">
+                            <form action="skeletonSearchPage.php" method="post"> <!-- Submit search query to separate script -->
                             <td colspan = 3>
                                 <label for="searchText">Search for posts here. Use single quotes for tags, commas to separate tags:</label><br><br><br>
                                 <input type="text" id="searchText" name="searchText"><br><br>
