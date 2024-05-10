@@ -1,5 +1,8 @@
+<!-- This script handles search functionality: using user-inputted search keywords to query the MySQL post database and display matching posts. 
+The script connects from skeletonHomePageForum.php to process search queries and fill HMTL tables with the results.
+-->
+
 <?php
-    //connection to server
     $servername = '127.0.0.1:3306';
     $username = 'root';
     $password = '';
@@ -11,15 +14,13 @@
         die('Connection failed: ' . $conn->connect_error);
     }
 
-    $searchKeywords = $_GET['search'];
-    //separate text into array of keywords
+    $searchKeywords = $_POST['searchText'];
+    // Separate text into an array of keywords, trim white space, and remove empty entries
     $keywordsArray = explode(',', $searchKeywords);
-    //trim white space out
     $keywordsArray = array_map('trim', $keywordsArray);
-    //remove empty entries
     $keywordsArray = array_filter($keywordsArray);
 
-    //loop search individual words
+    // Loop search individual words
     $sql = "SELECT * FROM poststoragetable WHERE ";
     $conditions = [];
 
@@ -36,6 +37,9 @@
     } 
     $conn->close()
 ?>
+
+<!-- HTML section: Inject query results into dynamic tables and display results, along with the rest of the page structure -->
+
 <html>
     <head>
         <link rel="stylesheet" href="skeletonCSS.css">
@@ -91,17 +95,6 @@
                                 <td colspan = 3>
                                     <label for="searchText">Search for posts here, use double quotes for tags:</label><br><br><br>
                                     <input type="text" id="searchText" name="searchText"><br><br>
-                                    <!--<script>
-                                        document.getElementById("searchText").addEventListener("keydown", function runSearch(e){if (e.keyCode == 13){
-                                                console.log("Enter key is pressed");
-                                                document.getElementById("searchEnterButton").click();
-                                            }});
-                                    </script>
-                                </td>
-                            </table>
-                        
-                    
-                                <button hidden id = "searchEnterButton" onclick="window.location.href='skeletonSearchPage.html';"></button>-->
                                 </td>
                         </table>
                             </form> 
