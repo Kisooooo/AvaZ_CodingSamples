@@ -209,6 +209,12 @@ Links external CSS for page styling and JavaScript functions for interactivity (
 
 
                 <script>
+                    /*
+                    Function to handle login form submission.
+                    Retrieves and stores entered username and password values in the browser's local storage.
+                    Updates hidden fields with the entered data for form submission.
+                     */
+
                     function submitLogin(event) {
                         event.preventDefault();
                         
@@ -255,6 +261,8 @@ Links external CSS for page styling and JavaScript functions for interactivity (
                         document.getElementById("signupForm").submit();
                     }
                 </script>
+
+        <!-- Forms to submit login and signup information to the server-->
 
                 <form id="loginForm" action="login.php" method="POST">
                     <input type="hidden" name="inputUsername" id="loginUsername">
@@ -478,7 +486,6 @@ Links external CSS for page styling and JavaScript functions for interactivity (
                         </tr>
                     </table>
                 </td>
-                <!--right bar rowspan 3 colspan 2 gone-->
             </tr>
             
                 
