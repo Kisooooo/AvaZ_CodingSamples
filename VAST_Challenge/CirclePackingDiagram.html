@@ -1,9 +1,14 @@
+<!--
+This HMTL file with D3.js generates an interactive circle packing graph to visualize hierarchical data, sourced from a .json file pre-processed separately.
+This graph uses a D3 pack layout and hierarchy function to calculate each circle's position and size.
+-->
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <title>Circle Packing Graph</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script> <!-- get D3 library and styles -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,37 +20,30 @@
     <div id="chart"></div>
 
     <script>
-        // Load the data from the JSON file
         d3.json("output_data.json").then(function(data) {
-            // Set up the dimensions and margin for the chart
             var width = 1000;
             var height = 1000;
             var margin = 600;
-
-            // Create a color scale for the companies
             var color = d3.scaleOrdinal(d3.schemeCategory10);
-
-            // Create a pack layout and set its size
+            
             var pack = d3.pack()
                 .size([width - margin, height - margin])
                 .padding(5);
 
-            // Create a hierarchy from the data
+
             var root = d3.hierarchy(data)
                 .sum(function(d) { return d.value; })
                 .sort(function(a, b) { return b.value - a.value; });
 
-            // Assign colors to the companies
             root.each(function(d) {
                 if (d.depth === 2) {
                     d.color = color(d.data.name);
                 }
             });
 
-            // Apply the pack layout to the hierarchy
             pack(root);
 
-            // Create the SVG container for the chart
+            // Draw SVG container and circles based on pack layout
             var svg = d3.select("#chart")
                 .append("svg")
                 .attr("width", width)
@@ -53,9 +51,6 @@
                 .append("g")
                 .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
-                
-
-            // Create circles for each node in the hierarchy
             var nodes = svg.selectAll("circle")
                 .data(root.descendants().slice(1))
                 .enter()
@@ -66,8 +61,8 @@
                 .attr("cy", function(d) { return d.y; })
                 .attr("stroke", "white")
                 .attr("stroke-width", 1)
+                // Show/hide tooltip
                 .on("mouseover", function(d) {
-                    // Show tooltip on mouseover
                     tooltip.transition()
                         .duration(200)
                         .style("opacity", 0.9);
@@ -76,40 +71,12 @@
                         .style("top", (d3.event.pageY - 28) + "px");
                 })
                 .on("mouseout", function(d) {
-                    // Hide tooltip on mouseout
                     tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
                 });
 
-
-
-                // Add tooltips on hover
-                svg.selectAll("circle")
-                    .on("mouseover", function(d) {
-                        // Show tooltip with company name and value
-                        tooltip.text(d.data.name + ": " + d.data.value);
-                        tooltip.style("visibility", "visible");
-                    })
-                    .on("mousemove", function() {
-                        // Position tooltip based on mouse cursor
-                        tooltip.style("top", (d3.event.pageY - 10) + "px")
-                            .style("left", (d3.event.pageX + 10) + "px");
-                    })
-                    .on("mouseout", function() {
-                        // Hide tooltip on mouseout
-                        tooltip.style("visibility", "hidden");
-                    });
-
-                // Implement click interaction
-                svg.selectAll("circle")
-                    .on("click", function(d) {
-                        // Perform actions on click, such as opening a new page or displaying more information
-                        console.log("Clicked on:", d.data.name);
-                    });
-
-
-            // Create a tooltip div
+            // Interactivity: Add tooltips with extended information on hover
             var tooltip = d3.select("body")
                 .append("div")
                 .style("position", "absolute")
@@ -119,8 +86,21 @@
                 .style("padding", "10px")
                 .style("opacity", 0);
 
-            // Add labels to the circles
+                svg.selectAll("circle")
+                    .on("mouseover", function(d) {
+                        tooltip.text(d.data.name + ": " + d.data.value);
+                        tooltip.style("visibility", "visible");
+                    })
+                    .on("mousemove", function() {
+                        tooltip.style("top", (d3.event.pageY - 10) + "px")
+                            .style("left", (d3.event.pageX + 10) + "px");
+                    })
+                    .on("mouseout", function() {
+                        tooltip.style("visibility", "hidden");
+                    });
 
+
+            // Add labels to the top-hierarchy circles
             var top2Companies = root.children.slice(0, 2);
             var threshold = d3.min(top2Companies, function(d) { return d.value; });
 
